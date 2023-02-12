@@ -1,0 +1,17 @@
+format:
+  # Line width and tab size are set to be consistent with our C++ style
+  line_width: 120
+  tab_size: 4
+markup:
+  # Do not touch comments
+  enable_markup: false
+
+# Custom commands must be defined here, otherwise they we parsed as plain lists
+additional_commands:
+  catkin_package:
+    kwargs:
+      INCLUDE_DIRS:  '*'
+      LIBRARIES: '*'
+      CATKIN_DEPENDS: '*'
+      DEPENDS: '*'
+      CFG_EXTRAS: '*'

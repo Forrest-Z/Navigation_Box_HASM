@@ -1,0 +1,52 @@
+#!/bin/bash
+# Copyright (C) 2020 by NavInfo Europe B.V. The Netherlands - All rights reserved
+# Information classification: Confidential
+# This content is protected by international copyright laws.
+# Reproduction and distribution is prohibited without written permission.
+
+# Exit on errors and undefined variables
+set -euo pipefail
+
+# Specify package name, version, source, and release
+PKG_NAME="ceres-solver"
+PKG_VERSION="1.14.0"
+PKG_SOURCE="https://ceres-solver.googlesource.com/ceres-solver"
+PKG_RELEASE="4" # Indicates the version of the generated package
+
+# Install package specific dependencies
+apt-get update
+apt-get install --no-install-recommends --assume-yes \
+    libgoogle-glog-dev \
+    libatlas-base-dev \
+    libsuitesparse-dev \
+    /deb/navinfo-libeigen3-dev_3.3.7-1_amd64.deb
+
+# Clone repository
+git clone ${PKG_SOURCE} ${PKG_NAME}
+
+# Build package
+cd ${PKG_NAME}
+git checkout tags/${PKG_VERSION}
+mkdir build
+cd build
+cmake -D CMAKE_BUILD_TYPE=Release \
+      -D BUILD_EXAMPLES=OFF \
+      -D BUILD_TESTING=OFF \
+      ..
+make -j $(nproc)
+
+# Create Debian package
+echo "NavInfo compiled package ${PKG_NAME}" > description-pak
+checkinstall \
+    --maintainer="IT NavInfo" \
+    --pkggroup="navinfo" \
+    --pkgname="navinfo-${PKG_NAME}" \
+    --pkgversion=${PKG_VERSION} \
+    --pkgrelease=${PKG_RELEASE} \
+    --pkgsource=${PKG_SOURCE} \
+    --arch=${PKG_ARCH} \
+    --provides="navinfo-${PKG_NAME}" \
+    --requires="libgoogle-glog-dev, \
+                libatlas-base-dev, \
+                libsuitesparse-dev, \
+                navinfo-libeigen3-dev"

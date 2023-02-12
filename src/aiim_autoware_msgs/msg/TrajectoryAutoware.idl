@@ -1,0 +1,17 @@
+#include "aiim_autoware_msgs/msg/TrajectoryPointAutoware.idl"
+#include "std_msgs/msg/Header.idl"
+
+module aiim_autoware_msgs {
+  module msg {
+    module TrajectoryAutoware_Constants {
+      const uint32 CAPACITY = 100;
+    };
+    @verbatim (language="comment", text=
+      " A set of trajectory points for the controller")
+    struct TrajectoryAutoware {
+      std_msgs::msg::Header header;
+
+      sequence<aiim_autoware_msgs::msg::TrajectoryPointAutoware, 100> points;
+    };
+  };
+};

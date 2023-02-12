@@ -1,0 +1,17 @@
+# Copyright (C) 2021 by NavInfo Europe B.V. The Netherlands - All rights reserved
+# Information classification: Confidential
+# This content is protected by international copyright laws.
+# Reproduction and distribution is prohibited without written permission.
+voxel_grid_filter:
+    ros__parameters:
+        required: False
+        input_topic: "velodyne_points"
+        output_topic: "filtered_points"
+        voxel_grid_leaf_size: 1.0
+        filter_min_range: 3.0
+        filter_max_range: 45.0
+        # When filter_retry_enabled=True, we want to see filter_retry_min_points amount of points after filtering
+        # or we retry again but with a max filter range of filter_retry_max_range.
+        filter_retry_enabled: False
+        filter_retry_min_points: 1000
+        filter_retry_max_range: 1000.0

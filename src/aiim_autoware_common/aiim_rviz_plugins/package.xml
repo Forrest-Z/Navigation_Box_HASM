@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<!--
+  This is a modified version of the original autoware_rviz_plugins package.xml from Autoware.
+  The original is licensed under the Apache License, Version 2.0. For more information
+  see the LICENSE file in the repository root
+  The changes made in this file, of which a summary is listed below, are copyrighted:
+
+  Copyright (C) 2021 by NavInfo Europe B.V. The Netherlands - All rights reserved
+  Information classification: Confidential
+  This content is protected by international copyright laws.
+  Reproduction and distribution is prohibited without written permission.
+
+  List of Changes:
+  * Package name from autoware_rviz_plugins to aiim_rviz_plugins
+  * Updated dependencies
+-->
+<package format="3">
+    <name>aiim_rviz_plugins</name>
+    <version>1.0.0</version>
+    <description>Contains plugins to visualize object detection outputs</description>
+    <maintainer email="info@aiim.ai">AIIM</maintainer>
+    <license>NavInfo Europe B.V. The Netherlands - Confidential</license>
+
+    <buildtool_depend>ament_cmake</buildtool_depend>
+
+    <build_depend>aiim_autoware_common</build_depend>
+    <build_depend>qtbase5-dev</build_depend>
+
+    <depend>aiim_autoware_msgs</depend>
+    <depend>rviz_common</depend>
+    <depend>rviz_default_plugins</depend>
+
+    <exec_depend>libqt5-widgets</exec_depend>
+    <exec_depend>rviz2</exec_depend>
+
+    <test_depend>ament_lint_auto</test_depend>
+    <test_depend>ament_lint_common</test_depend>
+
+    <export><build_type>ament_cmake</build_type></export>
+</package>

@@ -1,0 +1,16 @@
+
+source ~/Software/AIIM/panda_board_apps/panda_venv/bin/activate
+
+cd ~/Software/AIIM/panda_board_apps/openpilot/selfdrive/boardd 
+./boardd
+
+# New ros2_run with the logger
+cd ~/Software/BuurAutonoom/navigation_box/carcontrols
+
+# Old ros2_run 
+cd ~/Software/AIIM/panda_board_apps/openpilot/openpilot-tools/carcontrols 
+./ros2_run.py
+
+
+ros2 launch ouster_initializer ouster_initializer.launch.py
+

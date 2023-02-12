@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<!--
+  This is a modified version of the original pure_pursuit_nodes package.xml from Autoware.
+  The original is licensed under the Apache License, Version 2.0. For more information
+  see the LICENSE file in the repository root
+  The changes made in this file, of which a summary is listed below, are copyrighted:
+
+  Copyright (C) 2021 by NavInfo Europe B.V. The Netherlands - All rights reserved
+  Information classification: Confidential
+  This content is protected by international copyright laws.
+  Reproduction and distribution is prohibited without written permission.
+
+  List of Changes:
+  * package information
+  * dependencies
+-->
+<?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="2">
+    <name>pure_pursuit_nodes</name>
+    <version>1.0.0</version>
+    <description>ROS2 node wrappers around pure pursuit</description>
+    <maintainer email="info@aiim.ai">AIIM</maintainer>
+    <license>NavInfo Europe B.V. The Netherlands - Confidential</license>
+
+    <buildtool_depend>ament_cmake_auto</buildtool_depend>
+
+    <depend>controller_common_nodes</depend>
+    <depend>pure_pursuit</depend>
+
+    <build_depend>aiim_motion_common</build_depend>
+    <build_depend>aiim_time_utils</build_depend>
+    <build_depend>aiim_autoware_common</build_depend>
+
+    <test_depend>ament_index_python</test_depend>
+    <test_depend>ament_lint_common</test_depend>
+    <test_depend>ament_lint_auto</test_depend>
+    <test_depend>geometry_msgs</test_depend>
+    <test_depend>tf2_msgs</test_depend>
+    <test_depend>std_msgs</test_depend>
+    <test_depend>rclcpp</test_depend>
+    <test_depend>ros_testing</test_depend>
+    <test_depend>launch_testing_ros</test_depend>
+
+    <export><build_type>ament_cmake</build_type></export>
+</package>

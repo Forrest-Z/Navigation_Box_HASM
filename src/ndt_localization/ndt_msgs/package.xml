@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<!--
+  This is a modified version of the original autoware_msgs package.xml from Autoware.
+  The original is licensed under the Apache License, Version 2.0. For more information
+  see the LICENSE file in the repository root
+  The changes made in this file, of which a summary is listed below, are copyrighted:
+
+  Copyright (C) 2020, 2021 by NavInfo Europe B.V. The Netherlands - All rights reserved
+  Information classification: Confidential
+  This content is protected by international copyright laws.
+  Reproduction and distribution is prohibited without written permission.
+
+  List of Changes:
+  * package information
+  * Upgraded to ROS2
+-->
+<package format="3">
+  <name>ndt_msgs</name>
+  <version>2.0.0</version>
+  <description>The ndt_msgs package</description>
+  <maintainer email="info@aiim.ai">AIIM - Vehicles Team</maintainer>
+  <license>NavInfo Europe B.V. The Netherlands - Confidential</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  
+  <depend>std_msgs</depend>
+
+  <buildtool_depend>rosidl_default_generators</buildtool_depend>
+  <exec_depend>rosidl_default_runtime</exec_depend>
+  <member_of_group>rosidl_interface_packages</member_of_group>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+
+</package>

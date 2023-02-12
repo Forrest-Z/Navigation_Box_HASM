@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<robot name="agv">
+  <link name="base_link">
+    <visual>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <mesh filename="package://navigation_box/models/agv.dae"/>
+      </geometry>
+    </visual>
+  </link>
+</robot>

@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<!--
+  Copyright (C) 2021 by NavInfo Europe B.V. The Netherlands - All rights reserved
+  Information classification: Confidential
+  This content is protected by international copyright laws.
+  Reproduction and distribution is prohibited without written permission.
+-->
+<package format="2">
+  <name>aiim_roscpp</name>
+  <version>1.0.0</version>
+  <description>The aiim_roscpp package</description>
+  <maintainer email="info@aiim.ai">AIIM</maintainer>
+  <license>NavInfo Europe B.V. The Netherlands - Confidential</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>rclcpp</depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

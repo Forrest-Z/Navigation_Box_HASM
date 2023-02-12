@@ -1,0 +1,41 @@
+// This is a modified version of the original VehicleControlCommand.idl from Autoware.
+// The original is licensed under the Apache License, Version 2.0. For more information
+// see the LICENSE file in the repository root
+//
+// The changes made in this file, of which a summary is listed below, are copyrighted:
+//
+// Copyright (C) 2021 by NavInfo Europe B.V. The Netherlands - All rights reserved
+// Information classification: Confidential
+// This content is protected by international copyright laws.
+// Reproduction and distribution is prohibited without written permission.
+//
+// List of changes:
+// * Renamed autoware_auto_msgs to aiim_autoware_msgs
+
+#include "builtin_interfaces/msg/Time.idl"
+
+module aiim_autoware_msgs {
+  module msg {
+    @verbatim (language="comment", text=
+      " Information that is sent to Vehicle interface")
+    struct VehicleControlCommand {
+      builtin_interfaces::msg::Time stamp;
+
+      @verbatim (language="comment", text=
+        " should be negative when reversed")
+      @default (value=0.0)
+      float long_accel_mps2;
+
+      @verbatim (language="comment", text=
+        " should be negative when reversed")
+      @default (value=0.0)
+      float velocity_mps;
+
+      @default (value=0.0)
+      float front_wheel_angle_rad;
+
+      @default (value=0.0)
+      float rear_wheel_angle_rad;
+    };
+  };
+};

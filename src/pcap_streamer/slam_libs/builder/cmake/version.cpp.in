@@ -1,0 +1,37 @@
+/* Copyright (C) 2020 by NavInfo Europe B.V. The Netherlands - All rights reserved
+ * Information classification: Confidential
+ * This content is protected by international copyright laws.
+ * Reproduction and distribution is prohibited without written permission. */
+#include "version.hpp"
+
+#include <sstream>
+
+namespace version
+{
+
+static const std::string PROJECT_NAME =       "@CMAKE_AUTO_GENERATED_PROJECT_NAME@";
+static const std::string MAJOR =              "@CMAKE_AUTO_GENERATED_MAJOR@";
+static const std::string MINOR =              "@CMAKE_AUTO_GENERATED_MINOR@";
+static const std::string GIT_SHA1 =           "@CMAKE_AUTO_GENERATED_GIT_SHA1@";
+static const std::string GIT_DATE =           "@CMAKE_AUTO_GENERATED_GIT_DATE@";
+static const std::string GIT_COMMIT_SUBJECT = "@CMAKE_AUTO_GENERATED_GIT_COMMIT_SUBJECT@";
+
+std::string get()
+{
+  std::stringstream out;
+  out << PROJECT_NAME << " ";
+  out << MAJOR << ".";
+  out << MINOR << std::endl;
+
+  out << "\t";
+  out << GIT_SHA1 << " ";
+  out << GIT_DATE << std::endl;
+
+  out << "\t";
+  out << GIT_COMMIT_SUBJECT << std::endl;
+
+  out << std::endl;
+  return out.str();
+}
+
+} // version namespace

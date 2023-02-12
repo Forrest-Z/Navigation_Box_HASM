@@ -1,0 +1,198 @@
+#!/usr/bin/env groovy
+
+/* Copyright (C) 2020 by NavInfo Europe B.V. The Netherlands - All rights reserved
+ * Information classification: Confidential
+ * This content is protected by international copyright laws.
+ * Reproduction and distribution is prohibited without written permission. */
+
+pipeline {
+	agent {
+		node {
+			label "${NODE_LABEL}"
+		}
+	}
+
+	environment {
+		CREDENTIALS_ID = '2b05df71-229b-4c8f-b851-2c510f36a542'
+		unsupported_platform = "false"
+	}
+
+	stages {
+
+		stage('Pre-build') {
+			steps {
+
+				script{
+					newDescription = "Build for PR: $PULL_REQUEST_URL"
+					currentBuild.description= newDescription
+
+					if(!fileExists("3rdparty/")){
+						echo "Jenkins script says: Preparing 3rdparty directory"
+						bat "copy /Y /V \"C:\\Users\\sherif.shehata\\Dropbox (EvoVision)\\EvoVision\\dependencies\\3rdparty.rar\" ."
+						bat "\"C:\\Program Files\\WinRAR\\unrar\" x 3rdparty.rar"
+					}else{
+						echo "Jenkins script says: No need to prepare 3rdparty directory, already exists!"
+					}
+				}
+			}
+		}
+
+		stage('MergePullRequest') {
+			steps {
+				dir(path: "${PULL_REQUEST_TO_REPO_SLUG}") {
+
+					bat "git config --global user.email 'anyone@navinfo.eu'" //needed to use git commands, otherwise an error occurs
+					bat "git config --global user.name 'anyone'" //needed to use git commands, otherwise an error occurs
+
+					git(branch: 'master', url: "https://sherif.shehata@bitbucket.navinfo.eu/scm/${PULL_REQUEST_TO_REPO_PROJECT_KEY}/${PULL_REQUEST_TO_REPO_SLUG}.git", credentialsId: "${CREDENTIALS_ID}")
+					bat "git reset --hard ${PULL_REQUEST_TO_HASH}"
+					bat "git status" //show status for debugging
+					//bat "git remote add from ${PULL_REQUEST_FROM_SSH_CLONE_URL}"
+					//bat "git fetch from"
+					bat "git merge ${PULL_REQUEST_FROM_HASH}"
+					bat "git --no-pager log --max-count=10 --graph --abbrev-commit" //show commits history for debugging
+				}
+			}
+		}
+
+		stage('Check Platform') {
+			steps {
+				script{
+					platformsFile = "${PULL_REQUEST_TO_REPO_SLUG}/platforms.txt"
+
+					if( fileExists(platformsFile) ) {
+
+						//Read file to check if this build is needed
+						platformsList = readFile(platformsFile)
+						platformsList_split = platformsList.readLines()
+
+						echo "Jenkins script says: ${PULL_REQUEST_TO_REPO_SLUG} needs to be built on these platforms:\n${platformsList}"
+
+						if ( ! platformsList_split.contains(NODE_LABEL) ) {
+							currentBuild.result = 'ABORTED'
+							unsupported_platform = "true"
+							error("Jenkins script says: '${PULL_REQUEST_TO_REPO_SLUG}' repo not required to build on ${NODE_LABEL}. Exiting!")
+						}
+					} else {
+						currentBuild.result = 'ABORTED'
+						unsupported_platform = "true"
+						error("Jenkins script says: build will not run since no platforms file was found at ${platformsFile}. Exiting!")
+					}
+				}
+				notifyBitbucket(buildStatus: 'INPROGRESS', buildName: "${NODE_LABEL}", commitSha1: "${PULL_REQUEST_FROM_HASH}", stashServerBaseUrl: 'https://bitbucket.navinfo.eu', projectKey: "${NODE_LABEL}", credentialsId: "${CREDENTIALS_ID}", prependParentProjectKey: false, ignoreUnverifiedSSLPeer: false, includeBuildNumberInKey: true, disableInprogressNotification: false, considerUnstableAsSuccess: false)
+			}
+		}
+
+		stage('BuildDependencies') {
+			steps {
+				script{
+			
+					filePath = "${PULL_REQUEST_TO_REPO_SLUG}/dependencies.txt"
+
+					if( fileExists(filePath) ) {
+
+						dependenciesList = readFile(filePath)
+						splitList = dependenciesList.readLines()
+
+						echo "Jenkins script says: ${PULL_REQUEST_TO_REPO_SLUG} have theses dependencies:\n${dependenciesList}"
+
+						splitList.each { item ->
+
+							repo_name = item.split("/")[-1]
+
+							echo "Jenkins script says: Checkout ${item} .."
+
+							dir(path: "${repo_name}") {
+								git(branch: 'master', url: "https://sherif.shehata@bitbucket.navinfo.eu/scm/${item}.git", credentialsId: "${CREDENTIALS_ID}")
+							}
+						}
+					}
+				}
+			}
+		}
+
+		stage('BuildPullRequest') {
+			steps {
+				dir(path: "${PULL_REQUEST_TO_REPO_SLUG}") {
+					echo "Jenkins script says: Building ${PULL_REQUEST_TO_REPO_SLUG} .."
+
+					echo "Jenkins script says: ${PULL_REQUEST_TO_REPO_SLUG} build.bat starting!"
+					bat "build.bat"
+
+					echo "Jenkins script says: ${PULL_REQUEST_TO_REPO_SLUG} build.bat finished!"
+				}
+			}
+		}
+
+		stage("Test") {
+
+			environment {
+				GTEST_OUTPUT="xml:test_reports/"
+			}
+
+			steps {
+				dir(path: "${PULL_REQUEST_TO_REPO_SLUG}") {
+
+					echo "Jenkins script says: Testing.."
+
+					bat """
+						set DROPBOX_ROOT=\\\\zfs01.navinfo.eu\\evovision\\unit_tests_data\\
+						call run_tests.bat
+					"""
+				}
+			}
+		}
+
+		stage("Deploy") {
+			steps {
+				echo "Jenkins script says: Deploying...."
+			}
+		}
+	}
+
+	post {
+		always {
+
+			echo "Jenkins script says: Archiving test results!"
+
+			junit(testResults: "${PULL_REQUEST_TO_REPO_SLUG}/test_reports/*.xml", allowEmptyResults: true, keepLongStdio : true)
+
+			echo "Jenkins script says: Cleaning up workspace after build!"
+
+			script{
+				directoriesList = bat(script: 
+							"""@echo off 
+							dir /b /ad"""
+							, returnStdout: true).trim().readLines()
+
+				echo "Current directories are:\n${directoriesList}"
+		
+				directoriesList.each { item ->
+					dir(path: "${item}"){
+						if (item != "caffe" && item != "caffe@tmp" && item != "3rdparty") {
+							deleteDir()
+						}
+					}
+				}
+
+				directoriesList = bat(script: 
+							"""@echo off 
+							dir /b /ad"""
+							, returnStdout: true).trim().readLines()
+				echo "After cleanup, directories are:\n${directoriesList}"
+			}
+		}
+        success {
+			script{
+				notifyBitbucket(buildStatus: 'SUCCESSFUL', buildName: "${NODE_LABEL}", commitSha1: "${PULL_REQUEST_FROM_HASH}", stashServerBaseUrl: 'https://bitbucket.navinfo.eu', projectKey: "${NODE_LABEL}", credentialsId: "${CREDENTIALS_ID}", prependParentProjectKey: false, ignoreUnverifiedSSLPeer: false, includeBuildNumberInKey: true, disableInprogressNotification: false, considerUnstableAsSuccess: false)
+			}
+		}
+		unsuccessful {
+			script{        
+				if( unsupported_platform == "false" ){
+					notifyBitbucket(buildStatus: 'FAILED', buildName: "${NODE_LABEL}", commitSha1: "${PULL_REQUEST_FROM_HASH}", stashServerBaseUrl: 'https://bitbucket.navinfo.eu', projectKey: "${NODE_LABEL}", credentialsId: "${CREDENTIALS_ID}", prependParentProjectKey: false, ignoreUnverifiedSSLPeer: false, includeBuildNumberInKey: true, disableInprogressNotification: false, considerUnstableAsSuccess: false)
+                }
+			}
+		}
+	}
+}

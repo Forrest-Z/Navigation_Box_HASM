@@ -1,0 +1,389 @@
+# Copyright (C) 2021 by NavInfo Europe B.V. The Netherlands - All rights reserved
+# Information classification: Confidential
+# This content is protected by international copyright laws.
+# Reproduction and distribution is prohibited without written permission.
+
+# MQTT Client
+mqtt_autoware_interface:
+  ros__parameters:
+    
+    # Coordinates of the origin of the map
+    originLat: 51.44823418857984
+    originLong: 5.4824253844144195
+
+    # Minimum time between 2 MQTT (vehicle pose) messages publication
+    MQTTPubTime: 0.5
+
+    # MQTT broker info
+    username: "umo_mqtt"
+    password: "car@mqtt"
+    serverURI: "f799eccb4f10439197588da60e6ac2e4.s1.eu.hivemq.cloud"
+    serverPort: 8883
+    goalTopic: "avp/goal"
+    stackChoiceTopic: "avp/stack"
+    missionFeedbackTopic: "avp/feedback"
+    vehiclePoseFeedbackTopic: "avp/pose"
+
+# Localization
+voxel_grid_filter:
+  ros__parameters:
+    input_topic: "pcap_streamer_points"
+    output_topic: "filtered_points"
+    voxel_grid_leaf_size: 1.0
+    filter_min_range: 2.0
+    filter_max_range: 50.0 #90.0 #30.0
+    # When filter_retry_enabled=True, we want to see filter_retry_min_points amount of points after filtering
+    # or we retry again but with a max filter range of filter_retry_max_range.
+    filter_retry_enabled: False
+    filter_retry_min_points: 1000
+    filter_retry_max_range: 1000.0
+
+ndt_localization:
+  ros__parameters:
+    # use_sim_time: true
+    # NDT Mode
+    # pcl_generic=0, pcl_anh=1, pcl_anh_gpu=2, pcl_openmp=3
+    method_type: 3
+
+    # Input topics
+    localizer: pcap_streamer_frame
+    points_topic: filtered_points
+
+    # Pose prediction
+    # Can be zero/linear/quadratic
+    offset_type: linear
+    smooth_velocity: true
+
+    # NDT Parameters
+    max_iterations: 3
+    resolution: 1.0
+    step_size: 0.1
+    trans_epsilon: 0.01
+    enable_gnss: false
+    gnss_topic: gnss_pose
+    gnss_reinit_fitness: 500.0
+
+    # Here we define two possible initial positions.
+    # These have to be changed both here and in points_map_loader
+    # In front of MMP
+    # initial_x: 822.84
+    # initial_y: 157.45
+    # initial_z: 9.06
+    # initial_roll: 0.005
+    # initial_pitch: 0.016
+    # initial_yaw: 3.0
+
+    # initial_x: 828.707
+    # initial_y: 159.764
+    # initial_z: 9.06
+
+    # initial_x: 600.6828002929688
+    # initial_y: 192.72683715820312
+    # initial_z: 9.06
+
+
+    # Parking Garage last slot right down
+    # initial_x: 970.50
+    # initial_y: 244.7
+    # initial_z: 9.06
+    # initial_roll: 0.005
+    # initial_pitch: 0.016
+    # initial_yaw: 3.2
+
+
+    # Parking Garage right side of the light pole in the 3rd row inverse direction
+    # initial_x: 947.35
+    # initial_y: 224.43
+    # initial_z: 9.06
+    # initial_roll: 0.005
+    # initial_pitch: 0.016
+    # initial_yaw: 0.0
+
+
+    # Parking Garage first slot near the tree left down
+    # initial_x: 977.67
+    # initial_y: 219.33
+    # initial_z: 9.06
+    # initial_roll: 0.005
+    # initial_pitch: 0.016
+    # initial_yaw: 3.0
+
+
+
+    # #Parking Garage demo preparation 20220929 P1
+    initial_x: 948.363037109375
+    initial_y: 213.89157104492188
+    initial_z: 9.307544708251953
+    initial_roll: 0.005
+    initial_pitch: 0.016
+    initial_yaw: 0.0
+
+    # Parking Garage demo preparation 20221008 P4
+    # initial_x: 912.1971435546875
+    # initial_y: 212.07382202148438
+    # initial_z: 9.0590238571167
+    # initial_roll: 0.005
+    # initial_pitch: 0.016
+    # initial_yaw: 3.14
+
+
+  # Parking Garage demo preparation 20220929 P2
+    # initial_x: 932.0515747070312
+    # initial_y: 235.12216186523438
+    # initial_z: 9.259190559387207
+    # initial_roll: 0.005
+    # initial_pitch: 0.016
+    # initial_yaw: 3.1
+
+    # Parking Garage last slot right up (reverse direction)
+    # initial_x: 902.46
+    # initial_y: 236.55
+    # initial_z: 9.06
+    # initial_roll: 0.005
+    # initial_pitch: 0.016
+    # initial_yaw: 0.0
+    
+
+
+
+    # Heading
+    # real = 0.59
+    # imag = -0.998
+
+    # initial_roll: 0.005
+    # initial_pitch: 0.016
+    # initial_yaw: 0.
+    
+    # Between IPO and Aurora
+    # initial_x: 565.76
+    # initial_y: 171.63
+    # initial_z: 8.67
+    # initial_roll: 0.005
+    # initial_pitch: 0.016
+    # initial_yaw: -1.53
+
+# Perception
+path_cluster_detection:
+  ros__parameters:
+    # use_sim_time: true
+
+    # topic names
+    # input:
+    points_topic: "pcap_streamer_points" # input topic to lidar points
+    trajectory_topic: "planned_trajectory" # input topic to trajectory
+    state_topic: "vehicle_state" # input topic to kinematic state (for position) 
+    # output
+    cluster_topic: "object_clusters" # output pointcloud topic with clusters
+    bbox_topic: "trajectory_bbox_array" # output BoundingBoxArray topic
+
+    # Vehicle Information
+    vehicle_reference_frame: "base_link"
+
+    # # Cloud Filtering parameters
+    # height_min: -1.2 # min z height above path [float]
+    # height_max: 0.2 # max z height above path [float]
+    # obstacle_distance_min: 1.0  # min distance an obstacle can be [float]
+    # obstacle_distance_max: 100.0 # max distance an obstacle can be [float]
+
+    # # Euclidian Clustering 
+    # voxel_leaf_size: 0.2 # downsampling for input points [float]
+    # cluster_tolerance: 0.4 # max distance between cluster points [float]
+    # cluster_points_min: 4 # min points of cluster [uint]
+    # cluster_points_max: 400 # max points of cluster [uint]
+    # cloud_points_min: 5 # min points of input cloud [uint]
+
+    # Cloud Filtering parameters
+    height_min: -1.3 #-1.1 # -0.99 # -0.6 # min z height above path [float]
+    height_max:  0.5 # 0.1 # 0.5 # max z height above path [float]
+    obstacle_distance_min: 1.0  # min distance an obstacle can be [float]
+    obstacle_distance_max: 30.0 #20.0 # max distance an obstacle can be [float]
+
+    # Euclidian Clustering
+    use_lfit: True  #If true lfit method is used for boundingbox drawing, else eigen_2d will be used 
+    voxel_leaf_size: 0.009 # 0.01 # 0.1 # downsampling for input points [float]
+    cluster_tolerance: 0.3 # 0.1 #1.0 # .5 # max distance between cluster points [float]
+    cluster_points_min: 5 #15 # min points of cluster [uint]
+    cluster_points_max:  3000 # 600 # max points of cluster [uint]
+    cloud_points_min: 10 # 50 # min points of input cloud [uint]
+
+# Planning
+recordreplay_planner_node_exe:
+  ros__parameters:
+    heading_weight: 0.1
+    min_record_distance: 0.5
+    # This variable is set to false, because the collision avoidance client take care of collision estimation
+    # Double requests to object collision estimator will happen if set to true
+    enable_object_collision_estimator: False
+    goal_distance_threshold_m: 0.2 # 0.75
+    goal_angle_threshold_rad: 0.5 # 1.57
+
+object_collision_estimator_node_exe:
+  ros__parameters:
+    vehicle:
+      cg_to_front_m: 1.0
+      cg_to_rear_m: 1.0
+      front_corner_stiffness: 0.1
+      rear_corner_stiffness: 0.1
+      mass_kg: 1500.0
+      yaw_inertia_kgm2: 12.0
+      width_m: 2.0
+      front_overhang_m: 0.5
+      rear_overhang_m: 0.5
+      
+      # cg_to_front_m: 1.0
+      # cg_to_rear_m: 1.0
+      # front_corner_stiffness: 0.1
+      # rear_corner_stiffness: 0.1
+      # mass_kg: 1775.0
+      # yaw_inertia_kgm2: 12.0
+      # width_m: 2.0 # 1.76
+      # front_overhang_m: 0.97536
+      # rear_overhang_m: 0.97028
+    safety_factor: 1.1
+    stop_margin: 8.0  # distance between control point (e.g. CoG/base_link) and obstacle
+    # stop_margin: 1.5  # distance between control point (e.g. CoG/base_link) and obstacle
+    trajectory_smoother:
+      kernel_std: 5.0
+      kernel_size: 25 # 25
+    staleness_threshold_ms: 1000
+    target_frame_id: "map"
+    input_bounding_box_topic: "trajectory_bbox_array"
+
+collision_avoidance_client:
+  ros__parameters:
+    input_trajectory_topic: "planned_trajectory"
+    input_state_topic: "vehicle_state"
+    output_trajectory_topic: "modified_trajectory"
+    output_trajectory_topic_viz: "modified_trajectory_viz"
+
+# Control
+pure_pursuit_node_exe:
+  ros__parameters:
+    timeout_ms:                  20
+    command_topic: "control_command"
+    state_topic: "vehicle_state"
+    tf_topic: "tf"
+    static_tf_topic: "static_tf"
+    trajectory_topic: "modified_trajectory"
+    diagnostic_topic: "ctrl_diag"
+
+    # acceleration and steering limits determine the maximum control output
+    # limit = 5 -> max = 5, min = -5
+    # if not set, the default values are 5.0 and 1.0 respectively 
+    # As a safety measure, there are also hardcoded (10.0,2.0) values inside the pure_pursuit.cpp file 
+    acceleration_abs_limit: 0.2
+    deceleration_abs_limit: 10.0
+    steering_abs_limit: 5.0
+
+    # Value determining the publishing frequency of the controller in Hz, default is 20Hz
+    controller_frequency: 25
+
+    controller:
+      # minimum_lookahead_distance:      6.0
+      # maximum_lookahead_distance:      100.0
+      # speed_to_lookahead_ratio:        3.0
+      # is_interpolate_lookahead_point:  true
+      # is_delay_compensation:           false
+      # emergency_stop_distance:         0.3
+      # speed_thres_traveling_direction: 0.3
+      # dist_front_rear_wheels:          2.7
+
+      minimum_lookahead_distance:      3.0 #5.0
+      maximum_lookahead_distance:      100.0
+      speed_to_lookahead_ratio:        2.2   #1.0
+      is_interpolate_lookahead_point:  true
+      is_delay_compensation:           false
+      emergency_stop_distance:         0.3
+      speed_thres_traveling_direction: 0.3
+      dist_front_rear_wheels:          2.7
+
+udp_control_msg_client:
+  ros__parameters:
+    server_ip_address: "192.168.2.45"
+    server_ip_port: 5016
+    topic: "control_command"
+
+# Simulation
+agv_simulator:
+  ros__parameters:
+    # Input topic
+    input_topic: control_command
+
+    # Output topic
+    output_topic: vehicle_state
+
+    # Queue length
+    queue_size_subscriber: 10
+    queue_size_publisher: 10
+
+    # Transformation (baselink to map)
+    frame_id: "map"
+    child_frame_id: "base_link"
+
+    # Initial states
+    speed_initial: 0.         # speed of vehicle  [m/s]
+    x_initial: 0.             # initial x coordinate of vehicle [m]
+    y_initial: 0.             # initial y coordinate of vehicle [m]
+    heading_angle: 0.         # speed of vehicle  [m/s]
+    angular_velocity: 0.      # Angular velocity of vehicle in [rad/s]
+    side_slip_angle: 0.       # Angle between vehicle movement and steering direction [rad]
+
+    # Parameters
+    mass: 2000.                # mass of vehicle [kg]
+    length: 2.7               # length of front to rear axle [m]
+    length_front: 1.2         # length front axis to centre of gravity [m]
+    length_rear: 1.5          # length rear axis to centre of gravity [m]
+    sampling_rate: 10.         # How often a message is published [s]
+    damping_coefficient: 500. # Damping coefficient in [kg/s]
+
+    # Initial inputs
+    steering: 0.              # Steering angle [deg]
+    throttle: 0.              # Throttle position [-]
+
+
+# # Input
+# pcap_streamer:
+#   ros__parameters:
+#     output_topic_points: "pcap_streamer_points"
+#     output_topic_stamps: "pcap_streamer_stamps"
+#     # lidar_type: "Ouster_OS1_128" # possible values: "Velodyne_VLP16", "Velodyne_HDL32",
+#                                  # "Ouster_OS2_128", "Ouster_OS1_32", "KITTI"
+#     lidar_type: "Ouster_OS1_32"
+#     lidar_intrinsics_path: "/home/omax/AIIM/navigation_box/lidar_intrinsics.json"
+#     # May be removed in the future (getting read from the intrinsics).
+#     # Set to -1 (or another negative value) for maximum speed.
+#     lidar_hertz: 10
+
+#     # Change depending on use: "Network" or "Pcap"
+#     stream_type: "Pcap"
+#     # Define input source, either "ip.adress:port" or "/path/to/file"
+#     # source: "192.168.2.221:7502"
+#     source: "/home/omax/AIIM/maps/OS1_32/campus_short_c2/ouster_000.txt"
+
+# points_map_loader:
+#   ros__parameters:
+#     # Change this path to the location on local drive
+#     pcd_dir: "/home/omax/AIIM/maps/TueCampus/navinfo_20x20_02092020"
+#     dynamic: True
+#     arealist: "grid_information.csv"
+#     fallback_threshold_ms: 1000.0
+#     map_range: 80.0
+#     update_distance: 20.0
+#     reference_pose: vehicle_state
+#     fallback_pose: gnss_pose
+#     load_initial: True
+#     # Here we define two possible initial positions.
+#     # These have to be changed both here and in ndt_localization
+#     # In front of MMP
+#     initial_x: 822.84
+#     initial_y: 157.45
+#     initial_z: 9.06
+#     # Between IPO and Aurora
+#     # initial_x: 566.36
+#     # initial_y: 171.63
+#     # initial_z: 7.1
+
+
+#     # initial_x: 600.6828002929688
+#     # initial_y: 192.72683715820312
+#     # initial_z: 9.06

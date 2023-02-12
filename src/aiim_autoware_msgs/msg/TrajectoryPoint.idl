@@ -1,0 +1,52 @@
+// This is a modified version of the original TrajectoryPoint.idl from Autoware.
+// The original is licensed under the Apache License, Version 2.0. For more information
+// see the LICENSE file in the repository root
+//
+// The changes made in this file, of which a summary is listed below, are copyrighted:
+//
+// Copyright (C) 2021 by NavInfo Europe B.V. The Netherlands - All rights reserved
+// Information classification: Confidential
+// This content is protected by international copyright laws.
+// Reproduction and distribution is prohibited without written permission.
+//
+// List of changes:
+// * Renamed autoware_auto_msgs to aiim_autoware_msgs
+
+#include "aiim_autoware_msgs/msg/Complex32.idl"
+#include "builtin_interfaces/msg/Duration.idl"
+
+module aiim_autoware_msgs {
+  module msg {
+    @verbatim (language="comment", text=
+      " Representation of a trajectory point for the controller")
+    struct TrajectoryPoint {
+      builtin_interfaces::msg::Duration time_from_start;
+
+      @default (value=0.0)
+      float x;
+
+      @default (value=0.0)
+      float y;
+
+      aiim_autoware_msgs::msg::Complex32 heading;
+
+      @default (value=0.0)
+      float longitudinal_velocity_mps;
+
+      @default (value=0.0)
+      float lateral_velocity_mps;
+
+      @default (value=0.0)
+      float acceleration_mps2;
+
+      @default (value=0.0)
+      float heading_rate_rps;
+
+      @default (value=0.0)
+      float front_wheel_angle_rad;
+
+      @default (value=0.0)
+      float rear_wheel_angle_rad;
+    };
+  };
+};

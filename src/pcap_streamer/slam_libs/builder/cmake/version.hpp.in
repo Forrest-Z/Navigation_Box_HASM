@@ -1,0 +1,15 @@
+/* Copyright (C) 2020 by NavInfo Europe B.V. The Netherlands - All rights reserved
+ * Information classification: Confidential
+ * This content is protected by international copyright laws.
+ * Reproduction and distribution is prohibited without written permission. */
+#ifndef AUTO_GENERATED_VERSION_FILE_HPP
+#define AUTO_GENERATED_VERSION_FILE_HPP
+
+#include <string>
+
+namespace version
+{
+  std::string get();
+}
+
+#endif // AUTO_GENERATED_VERSION_FILE_HPP

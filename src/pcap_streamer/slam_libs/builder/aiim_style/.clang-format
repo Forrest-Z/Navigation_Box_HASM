@@ -1,0 +1,15 @@
+BasedOnStyle: Google
+# Deviations
+Standard: c++17
+ColumnLimit: 120
+IndentWidth: 4
+AccessModifierOffset: -4
+# Explicit choices within Google style
+DerivePointerAlignment: false
+PointerAlignment: Left
+IncludeBlocks: Preserve
+# The following 3 lines are for parameter and argument alignment
+AlignAfterOpenBracket: AlwaysBreak
+BinPackArguments: false
+BinPackParameters: false
+ContinuationIndentWidth: 8

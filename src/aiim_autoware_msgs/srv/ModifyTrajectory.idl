@@ -1,0 +1,32 @@
+// This is a modified version of the original ModifyTrajectory.idl from Autoware.
+// The original is licensed under the Apache License, Version 2.0. For more information
+// see the LICENSE file in the repository root
+//
+// The changes made in this file, of which a summary is listed below, are copyrighted:
+//
+// Copyright (C) 2021 by NavInfo Europe B.V. The Netherlands - All rights reserved
+// Information classification: Confidential
+// This content is protected by international copyright laws.
+// Reproduction and distribution is prohibited without written permission.
+//
+// List of changes:
+// * Renamed autoware_auto_msgs to aiim_autoware_msgs
+
+#include "aiim_autoware_msgs/msg/Trajectory.idl"
+
+module aiim_autoware_msgs {
+  module srv {
+    struct ModifyTrajectory_Request
+    {
+      @verbatim(language = "comment", text =
+        "Trajectory to be modified")
+      aiim_autoware_msgs::msg::Trajectory original_trajectory;
+    };
+    struct ModifyTrajectory_Response
+    {
+      @verbatim(language = "comment", text =
+        "Trajectory after modification")
+      aiim_autoware_msgs::msg::Trajectory modified_trajectory;
+    };
+  };
+};

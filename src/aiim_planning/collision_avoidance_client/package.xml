@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<!-- 
+  Copyright (C) 2021 by NavInfo Europe B.V. The Netherlands - All rights reserved
+  Information classification: Confidential
+  This content is protected by international copyright laws.
+  Reproduction and distribution is prohibited without written permission.
+-->
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>collision_avoidance_client</name>
+  <version>1.0.0</version>
+  <description>Published modified trajectory after obstacle detection</description>
+  <maintainer email="info@aiim.ai">AIIM</maintainer>
+  <license>NavInfo Europe B.V. The Netherlands - Confidential</license>
+
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
+
+  <depend>rclcpp</depend>
+  <depend>rclcpp_components</depend>
+
+  <depend>aiim_roscpp</depend>
+  <depend>aiim_autoware_msgs</depend>
+  <depend>aiim_geometry</depend>
+  <depend>aiim_tf2</depend>  
+  <depend>tf2</depend>
+  <depend>tf2_ros</depend>
+  <depend>visualization_msgs</depend>
+
+  <build_depend>aiim_time_utils</build_depend>
+  <build_depend>aiim_motion_common</build_depend>
+
+  <exec_depend>launch_ros</exec_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

@@ -1,0 +1,14 @@
+map_config:
+  #TIERIV's tue
+  latitude: 51.442352316374894
+  longitude: 4.438876794395926
+  #JOSM tue
+  # latitude: 51.44894860789382
+  # longitude: 5.494184357433206
+  #Default (AutonomoStuff in San Joze)
+  # latitude: 37.380811523812845
+  # longitude: -121.90840595108715
+  elevation: 16.0
+  roll: 0.0
+  pitch: 0.0
+  yaw: 0.0

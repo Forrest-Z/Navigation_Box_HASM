@@ -1,0 +1,34 @@
+// This is a modified version of the original DiagnosticHeader.idl from Autoware.
+// The original is licensed under the Apache License, Version 2.0. For more information
+// see the LICENSE file in the repository root
+//
+// The changes made in this file, of which a summary is listed below, are copyrighted:
+//
+// Copyright (C) 2021 by NavInfo Europe B.V. The Netherlands - All rights reserved
+// Information classification: Confidential
+// This content is protected by international copyright laws.
+// Reproduction and distribution is prohibited without written permission.
+//
+// List of changes:
+// * Renamed autoware_auto_msgs to aiim_autoware_msgs
+
+#include "builtin_interfaces/msg/Duration.idl"
+#include "builtin_interfaces/msg/Time.idl"
+
+module aiim_autoware_msgs {
+  module msg {
+    @verbatim (language="comment", text=
+      " Base information that all diagnostic messages should have")
+    struct DiagnosticHeader {
+      string<256> name;
+
+      builtin_interfaces::msg::Time data_stamp;
+
+      builtin_interfaces::msg::Time computation_start;
+
+      builtin_interfaces::msg::Duration runtime;
+
+      uint32 iterations;
+    };
+  };
+};

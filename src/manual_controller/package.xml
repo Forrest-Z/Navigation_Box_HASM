@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<!--
+  Copyright (C) 2021 by NavInfo Europe B.V. The Netherlands - All rights reserved
+  Information classification: Confidential
+  This content is protected by international copyright laws.
+  Reproduction and distribution is prohibited without written permission.
+-->
+<package format="2">
+  <name>manual_controller</name>
+  <version>0.2.0</version>
+  <description>The manual_controller package</description>
+  <maintainer email="info@aiim.ai">AIIM - Vehicles Team</maintainer>
+  <license>NavInfo Europe B.V. The Netherlands - Confidential</license>
+
+  <depend>aiim_autoware_msgs</depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

@@ -1,0 +1,20 @@
+# Copyright (C) 2021, 2022 by NavInfo Europe B.V. The Netherlands - All rights reserved
+# Information classification: Confidential
+# This content is protected by international copyright laws.
+# Reproduction and distribution is prohibited without written permission.
+pcap_streamer:
+  ros__parameters:
+    output_topic_points: "pcap_streamer_points"
+    output_topic_stamps: "pcap_streamer_stamps"
+    lidar_type: "Ouster_OS2_128" # possible values: "Velodyne_VLP16", "Velodyne_HDL32",
+                                 # "Ouster_OS2_128", "Ouster_OS1_32", "Ouster_OS1_128", "KITTI"
+    lidar_intrinsics_path: "./lidar_intrinsics.json"
+    # May be removed in the future (getting read from the intrinsics).
+    # Set to -1 (or another negative value) for maximum speed.
+    lidar_hertz: 20
+
+    # Change depending on use: "Network" or "Pcap"
+    stream_type: "Network"
+    # Define input source, either "ip.adress:port" or "/path/to/file.txt containing list of pcap files"
+    source: "192.168.2.221:7502"
+    # source: /home/carpc/Dataset/OS1_32/campus_short_c2/ouster_000.txt

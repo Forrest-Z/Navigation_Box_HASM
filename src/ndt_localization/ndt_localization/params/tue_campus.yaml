@@ -1,0 +1,37 @@
+# Copyright (C) 2021 by NavInfo Europe B.V. The Netherlands - All rights reserved
+# Information classification: Confidential
+# This content is protected by international copyright laws.
+# Reproduction and distribution is prohibited without written permission.
+
+ndt_localization:
+  ros__parameters:
+    # NDT Mode
+    # pcl_generic=0, pcl_anh=1, pcl_anh_gpu=2, pcl_openmp=3
+    method_type: 3
+    output: log
+    required: false
+
+    # Input topics
+    localizer: velodyne
+    points_topic: filtered_points
+
+    # Pose prediction
+    offset_type: linear
+    smooth_velocity: true
+
+    # NDT Parameters
+    max_iterations: 10
+    resolution: 0.75
+    step_size: 0.1
+    trans_epsilon: 0.01
+    enable_gnss: false
+    gnss_topic: gnss_pose
+    gnss_reinit_fitness: 500.0
+
+    # Initial position
+    initial_x: 850.6708374023438 #750.0
+    initial_y: 158.67703247070312 #33.0
+    initial_z: 60.0
+    initial_roll: 0.0
+    initial_pitch: 0.0
+    initial_yaw: 0.0

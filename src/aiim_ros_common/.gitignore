@@ -1,0 +1,21 @@
+# Visual Studio project related stuff.
+*.suo
+*.sdf
+*.user
+*.opensdf
+# Visual Studio Code Stuff
+.vscode
+# ROS2 build.
+build
+install
+log
+# CLion.
+cmake-build*
+.idea
+# Python
+venv
+# General
+*.log
+# Generated plots, visualizations, etc.
+*.csv
+*.png

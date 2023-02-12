@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<!--
+  This is a modified version of the original ndt_matching package.xml from Autoware.
+  The original is licensed under the Apache License, Version 2.0. For more information
+  see the LICENSE file in the repository root
+  The changes made in this file, of which a summary is listed below, are copyrighted:
+
+  Copyright (C) 2020, 2021 by NavInfo Europe B.V. The Netherlands - All rights reserved
+  Information classification: Confidential
+  This content is protected by international copyright laws.
+  Reproduction and distribution is prohibited without written permission.
+
+  List of Changes:
+  * package information
+  * completed list of dependent packages
+  * removed packages which are now integrated as libraries
+  * upgraded to ROS2
+-->
+<package format="2">
+  <name>ndt_localization</name>
+  <version>2.0.0</version>
+  <description>The ndt_localization package</description>
+  <maintainer email="info@aiim.ai">AIIM - Vehicles Team</maintainer>
+  <license>NavInfo Europe B.V. The Netherlands - Confidential</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>aiim_ros_cmake</buildtool_depend>
+
+  <exec_depend>aiim_rospy</exec_depend>
+
+  <depend>aiim_autoware_msgs</depend>
+  <!-- <depend>autoware_auto_vehicle_msgs</depend> -->
+  <depend>ndt_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>launch</depend>
+  <depend>launch_ros</depend>
+  <depend>libpcl-all</depend>
+  <depend>nav_msgs</depend>
+  <depend>rclcpp</depend>
+  <depend>sensor_msgs</depend>
+  <depend>std_msgs</depend>
+  <depend>tf2</depend>
+  <depend>tf2_ros</depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

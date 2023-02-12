@@ -1,0 +1,39 @@
+# Copyright (C) 2021 by NavInfo Europe B.V. The Netherlands - All rights reserved
+# Information classification: Confidential
+# This content is protected by international copyright laws.
+# Reproduction and distribution is prohibited without written permission.
+agv_simulator:
+  ros__parameters:
+    # Input topic
+    input_topic: control_command
+
+    # Output topic
+    output_topic: vehicle_state
+
+    # Queue length
+    queue_size_subscriber: 10
+    queue_size_publisher: 10
+
+    # Transformation (baselink to map)
+    frame_id: "map"
+    child_frame_id: "base_link"
+
+    # Initial states
+    speed_initial: 0.         # speed of vehicle  [m/s]
+    x_initial: 0.             # initial x coordinate of vehicle [m]
+    y_initial: 0.             # initial y coordinate of vehicle [m]
+    heading_angle: 0.         # speed of vehicle  [m/s]
+    angular_velocity: 0.      # Angular velocity of vehicle in [rad/s]
+    side_slip_angle: 0.       # Angle between vehicle movement and steering direction [rad]
+
+    # Parameters
+    mass: 500.                # mass of vehicle [kg]
+    length: 0.5               # length of front to rear axes [m]
+    length_front: 0.2         # length front axis to centre of gravity [m]
+    length_rear: 0.3          # length rear axis to centre of gravity [m]
+    sampling_rate: 10.         # How often a message is published [s]
+    damping_coefficient: 500. # Damping coefficient in [kg/s]
+
+    # Initial inputs
+    steering: 5.              # Steering angle [deg]
+    throttle: 5.              # Throttle position [-]

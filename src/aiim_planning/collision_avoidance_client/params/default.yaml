@@ -1,0 +1,7 @@
+collision_avoidance_client:
+  ros__parameters:
+    input_trajectory_topic: "planned_trajectory"
+    input_state_topic: "vehicle_state"
+    output_trajectory_topic: "modified_trajectory"
+    output_trajectory_topic_viz: "modified_trajectory_viz"
+    

@@ -1,0 +1,18 @@
+#include "aiim_autoware_msgs/msg/TrajectoryAutoware.idl"
+
+module aiim_autoware_msgs {
+  module srv {
+    struct ModifyTrajectoryAutoware_Request
+    {
+      @verbatim(language = "comment", text =
+        "Trajectory to be modified")
+      aiim_autoware_msgs::msg::TrajectoryAutoware original_trajectory;
+    };
+    struct ModifyTrajectoryAutoware_Response
+    {
+      @verbatim(language = "comment", text =
+        "Trajectory after modification")
+      aiim_autoware_msgs::msg::TrajectoryAutoware modified_trajectory;
+    };
+  };
+};

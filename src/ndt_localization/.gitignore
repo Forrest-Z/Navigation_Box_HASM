@@ -1,0 +1,27 @@
+# Visual Studio project related stuff.
+*.suo
+*.sdf
+*.user
+*.opensdf
+# Visual Studio Code Stuff
+.vscode
+# Visual Studio 32 bits build.
+Debug
+Release
+# Visual Studio 64 bits build.
+x64
+# ROS build.
+build
+devel
+install
+log
+# CLion.
+cmake-build*
+.idea
+# Python
+venv
+# General
+*.log
+# Generated plots, visualizations, etc.
+*.csv
+*.png

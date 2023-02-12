@@ -1,0 +1,2 @@
+Integer indices would overflow.[pcl::VoxelGrid::applyFilter] Leaf size is too small for the input dataset. Integer indices would overflow.terminate called after throwing an instance of 'std::length_error'
+[path_cluster_detection-9]   what():  Exceeded upper bound

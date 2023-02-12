@@ -1,0 +1,47 @@
+// This is a modified version of the original ControlDiagnostic.idl from Autoware.
+// The original is licensed under the Apache License, Version 2.0. For more information
+// see the LICENSE file in the repository root
+//
+// The changes made in this file, of which a summary is listed below, are copyrighted:
+//
+// Copyright (C) 2021 by NavInfo Europe B.V. The Netherlands - All rights reserved
+// Information classification: Confidential
+// This content is protected by international copyright laws.
+// Reproduction and distribution is prohibited without written permission.
+//
+// List of changes:
+// * Renamed autoware_auto_msgs to aiim_autoware_msgs
+
+#include "aiim_autoware_msgs/msg/DiagnosticHeader.idl"
+
+module aiim_autoware_msgs {
+  module msg {
+    @verbatim (language="comment", text=
+      " Diagnostic information for the controller")
+    struct ControlDiagnostic {
+      aiim_autoware_msgs::msg::DiagnosticHeader diag_header;
+
+      @verbatim (language="comment", text=
+        " Controller specific information")
+      boolean new_trajectory;
+
+      string<256> trajectory_source;
+
+      string<256> pose_source;
+
+      @verbatim (language="comment", text=
+        " the error between the current vehicle and the nearest neighbor point")
+      float lateral_error_m;
+
+      float longitudinal_error_m;
+
+      float velocity_error_mps;
+
+      float acceleration_error_mps2;
+
+      float yaw_error_rad;
+
+      float yaw_rate_error_rps;
+    };
+  };
+};

@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<!--
+  This is a modified version of the original motion_testing package.xml from Autoware.
+  The original is licensed under the Apache License, Version 2.0. For more information
+  see the LICENSE file in the repository root
+  The changes made in this file, of which a summary is listed below, are copyrighted:
+
+  Copyright (C) 2021 by NavInfo Europe B.V. The Netherlands - All rights reserved
+  Information classification: Confidential
+  This content is protected by international copyright laws.
+  Reproduction and distribution is prohibited without written permission.
+
+  List of Changes:
+  * package information
+  * dependencies
+-->
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>recordreplay_planner_actions</name>
+  <version>1.0.0</version>
+  <description>RecordReplayPlanner related action definitions</description>
+  <maintainer email="info@aiim.ai">AIIM</maintainer>
+  <license>NavInfo Europe B.V. The Netherlands - Confidential</license>
+
+  <buildtool_depend>ament_cmake_auto</buildtool_depend>
+  <buildtool_depend>rosidl_default_generators</buildtool_depend>
+
+  <depend>action_msgs</depend>
+
+  <exec_depend>rosidl_default_runtime</exec_depend>
+
+  <member_of_group>rosidl_interface_packages</member_of_group>
+
+  <export><build_type>ament_cmake</build_type></export>
+</package>

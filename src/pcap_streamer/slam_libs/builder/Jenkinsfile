@@ -1,0 +1,629 @@
+#!/usr/bin/env groovy
+
+/* Copyright (C) 2020, 2021 by NavInfo Europe B.V. The Netherlands - All rights reserved
+ * Information classification: Confidential
+ * This content is protected by international copyright laws.
+ * Reproduction and distribution is prohibited without written permission. */
+
+// Only build a docker image when there's a Dockerfile
+def shouldBuildDockerfile() {
+	return fileExists("${PULL_REQUEST_TO_REPO_SLUG}/Dockerfile")
+}
+
+// This finds a package.xml file which could indicate a ros environment
+// It searches within the parent as we are in $REPOSITORY_ROOT/build
+// First, it excludes a potential src directory. If it doesnt find it, then it will allow a src directory.
+// If it finds it in the first step, it will be a repository contained one or multiple package(s)
+// Otherwise it will be a potential ros workspace
+// It returns whether it found it on the first step and the path to the found package.xml
+def findPackageXml(){
+	def found_package = sh(script: 'find .. -path ../src -prune -false -o -name package.xml -print -quit', returnStdout: true).trim()
+	if ("${found_package}" != ""){
+		return ["true", found_package]
+	} else {
+		found_package = sh(script: 'find .. -name package.xml -print -quit', returnStdout: true).trim()
+		return ["false", found_package]
+	}
+}
+
+// It returns the ROS version if found
+// Or nothing if not
+def identifyROS(){
+	def (is_ros_pkg, pkgfile_path) = findPackageXml()
+	if ("${pkgfile_path}" == ""){
+		echo("Jenkins script says: No package.xml file found, assuming this is not a ROS repository.")
+		return ""
+	}
+
+	// Echo for troubleshooting possible wrongly included package.xml files resulting in faulty ROS detection
+	echo("Jenkins script says: package.xml used for ROS analysis: ${pkgfile_path}")
+	// We read the file and lines
+	def pkgfile_lines = readFile(pkgfile_path).readLines()
+	// Then we search the lines for the ROS1/2 indicators
+	// ROS2 uses ament
+	def ros2_detected = pkgfile_lines.findAll{it.contains('ament')}
+	// ROS1 uses catkin
+	def ros1_detected = pkgfile_lines.findAll{it.contains('catkin')}
+	// Returning combined information from pkg/ws and ros version
+	if(ros2_detected){
+		if("$is_ros_pkg" == "true"){
+			return "ROS2-pkg"
+		} else {
+			return "ROS2-ws"
+		}
+	} else if (ros1_detected){
+		if("$is_ros_pkg" == "true"){
+			return "ROS1-pkg"
+		} else {
+			return "ROS1-ws"
+		}
+	} else {
+		return ""
+	}
+}
+
+def buildRos1Ws(){
+	echo "Jenkins script says: Running `catkin_make tests` to build ROS1.."
+	sh '''
+	. /opt/ros/$ROS_DISTRO/setup.sh
+	cd ..
+	catkin_make tests
+	'''
+}
+
+def buildRos2Ws(){
+	echo "Jenkins script says: Running `colcon build` to build ROS2.."
+	sh '''
+	. /opt/ros/$ROS_DISTRO/setup.sh
+	cd ..
+	colcon build --cmake-args -DWITH_CUDA=FALSE -DIN_JENKINS=TRUE
+	'''
+}
+
+
+// This puts a ros package within the correct file structure for a ros workspace
+// 1. Moves files to build_tmp folder (to avoid duplicate src)
+// 2. Create workspace structure (src/pkg/CODE)
+// 3. Move files from build_tmp to pkg
+def convertRosPackageToWorkspace() {
+	echo "Jenkins script says: Moving files to create proper ROS workspace.."
+	echo "Jenkins script says: Creating temporary ROS pkg directory"
+	sh 'mkdir ../build_tmp'
+	echo "Jenkins script says: Moving all ROS pkg files excl build|build_tmp dirs and the dockerfile to build_tmp"
+	sh 'find .. -mindepth 1 -maxdepth 1 ! \\( -name "build*" -o -name "Dockerfile" \\) -exec mv -t ../build_tmp {} +'
+	echo "Jenkins script says: Creating new ROS src/pkg folders"
+	sh 'mkdir -p ../src/pkg'
+	echo "Jenkins script says: Moving ROS pkg files from build_tmp to src/pkg"
+	sh 'mv ../build_tmp/* ../src/pkg'
+}
+
+// This searches all package.xml files within the current directory for a dependency on the given package
+// If a package depends on another, it should be included in the package.xml as:
+// <depend>PACKAGE_NAME</depend>
+// If an exact match is found, it returns true, otherwise false
+def checkPackageDependency(package_list){
+	def has_all_dependencies = false
+	for (name in package_list) {
+		def matched_line = sh(script: "grep -R -m 1 --include='package.xml' 'depend>${name}</' .", returnStatus: true)
+		if (!matched_line){
+			echo "Jenkins script says: A dependency on ${name} has been found."
+		} else {
+			echo "Jenkins script says: No dependencies on ${name} found."
+		}
+		has_all_dependencies = has_all_dependencies || !matched_line
+	}
+    return has_all_dependencies
+}
+
+// This clones a ROS repository within the current directory
+// This is meant to be run in the src directory of a ROS workspace
+// Also, only for single ros package repositories, not ros workspace repositories
+def cloneAiimRosPackageRepository(repository){
+	dir(path: "./${repository}/") {
+		git(credentialsId: "${SSH_CREDENTIALS_ID}", branch: 'master', url: "ssh://git@navbitbucket01.navinfo.eu:7999/ros/${repository}.git")
+		
+		withCredentials([sshUserPrivateKey(credentialsId: "${SSH_CREDENTIALS_ID}", keyFileVariable: 'SSH_KEY')]) {
+			sh 'GIT_SSH_COMMAND="ssh -i $SSH_KEY" git submodule update --init --recursive --remote'
+        }
+	}
+}
+
+// This clones the packages a package repository depends on from our custom packages
+// It uses the package.xml files within the package repository to find these dependencies
+// We have a list of possible repositories and the package within it:
+// aiim_ros_common: aiim_common / aiim_geometry / aiim_motion_common / aiim_time_utils
+// aiim_ros_msgs: aiim_msgs
+def cloneRosPackageDependencies(){
+	// We currently are in $REPOSITORY_ROOT/build
+	// But we want to search in $REPOSITORY_ROOT/src
+	// So, we change our current directory:
+	dir(path: "../src/") {
+		// We only have to clone if the packages are not covered by the current repository
+		if("${PULL_REQUEST_TO_REPO_SLUG}" != "aiim_ros_common"){
+			if (checkPackageDependency([
+					'aiim_rospy',
+					'aiim_cpp',
+					'aiim_ros_cmake'])){
+				cloneAiimRosPackageRepository('aiim_ros_common')
+			}
+		}
+		if("${PULL_REQUEST_TO_REPO_SLUG}" != "aiim_autoware_common"){
+			if (checkPackageDependency([
+					'aiim_autoware_common',
+					'aiim_geometry',
+					'aiim_time_utils'])){
+				cloneAiimRosPackageRepository('aiim_autoware_common')
+			}
+		}
+		if("${PULL_REQUEST_TO_REPO_SLUG}" != "aiim_autoware_msgs"){
+			if (checkPackageDependency([
+					'aiim_autoware_msgs'])){
+				cloneAiimRosPackageRepository('aiim_autoware_msgs')
+			}
+		}
+		if("${PULL_REQUEST_TO_REPO_SLUG}" != "aiim_motion"){
+			if (checkPackageDependency([
+					'aiim_motion_common',
+					'aiim_motion_testing',
+					'aiim_motion_model'])){
+				cloneAiimRosPackageRepository('aiim_motion')
+			}
+		}
+	}
+}
+
+// Call cmake and make with the appropriate flags
+def buildPullRequestScript() {
+	script {
+		echo "Jenkins script says: Building ${PULL_REQUEST_TO_REPO_SLUG} .."
+
+		dir(path: "${PULL_REQUEST_TO_REPO_SLUG}/build") {
+
+			ros_id = identifyROS()
+			// Check if AIIM ROS
+			// We check for this first as it does not follow standard cmake -> make
+			if("${NODE_LABEL}" == "aiim" && "${ros_id}" != ""){
+				if("${ros_id}" == "ROS2-pkg") {
+					echo "Jenkins script says: ${PULL_REQUEST_TO_REPO_SLUG} identified as a ROS2 package or metapackage."
+					convertRosPackageToWorkspace()
+					cloneRosPackageDependencies()
+					buildRos2Ws()
+				} else if ("${ros_id}" == "ROS2-ws"){
+					echo "Jenkins script says: ${PULL_REQUEST_TO_REPO_SLUG} identified as a ROS2 workspace."
+					buildRos2Ws()
+				} else if ("${ros_id}" == "ROS1-pkg"){
+					echo "Jenkins script says: ${PULL_REQUEST_TO_REPO_SLUG} identified as a ROS1 package or metapackage."
+					convertRosPackageToWorkspace()
+					// Aside from moving the package, we also have to identify the current dir as a ws 
+					sh 'touch ../.catkin_workspace'
+					// Metapackages need a top level catkin CMakeLists file.
+					if(fileExists("../CATKIN_METAPACKAGE")) {
+						sh 'ln -s /opt/ros/$ROS_DISTRO/share/catkin/cmake/toplevel.cmake src/CMakeLists.txt'
+					}
+					buildRos1Ws()
+				} else if ("${ros_id}" == "ROS1-ws"){
+					echo "Jenkins script says: ${PULL_REQUEST_TO_REPO_SLUG} identified as a ROS1 workspace."
+					buildRos1Ws()
+				} else {
+					error("Unknown ROS setup")
+				}
+			// It is not ROS related so we can follow standard cmake -> make builds
+			} else {
+				if("${NODE_LABEL}" == "jetson" || "${NODE_LABEL}" == "ubuntu+gpu"){
+					// This enables all BUILD_XXX variables, and build with Cuda
+					sh "cmake -D IN_JENKINS=TRUE .. -LA | grep -P ^BUILD_ | cut -f1 -d: | sed s/^/-D/ | sed s/\$/=TRUE/ | xargs cmake -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc -D IN_JENKINS=TRUE -D WITH_COVERAGE=ON -D WITH_CUDA=ON -D WITH_TENSORRT=ON -D WITH_CUDA_SEPARABLE_COMPILATION=OFF -LA .."
+				}else if("${NODE_LABEL}" == "ubuntu"){
+					sh "cmake -D IN_JENKINS=TRUE -D BUILD_TESTS=TRUE -D WITH_COVERAGE=ON -D WITH_TENSORRT=OFF -D BUILD_TRT=OFF -D WITH_CUDA=OFF -LA .."
+				}else if("${NODE_LABEL}" == "aiim") {
+					// This enables all BUILD_XXX and WITH_ variables, and build with Cuda
+					sh "cmake -D IN_JENKINS=TRUE .. -LA | grep -E \"^(BUILD|WITH)_\" | cut -f1 -d: | sed s/^/-D/ | sed s/\$/=TRUE/ | xargs cmake -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc -D IN_JENKINS=TRUE -LA .."
+				}else{
+					error("Unknown platform")
+				}
+				sh "make rebuild_cache"  // Pick up additional cache entries.
+				echo "Jenkins script says: ${PULL_REQUEST_TO_REPO_SLUG} cmake finished!"
+
+				sh 'make -j$(nproc)'
+				echo "Jenkins script says: ${PULL_REQUEST_TO_REPO_SLUG} make finished!"
+			}
+		}
+	}
+}
+
+def runTests() {
+    environment {
+        GTEST_OUTPUT="xml:test_reports/"
+    }
+
+    dir(path: "${PULL_REQUEST_TO_REPO_SLUG}/build") {
+
+        echo "Jenkins script says: Testing.."
+
+        sh '''
+        export DROPBOX_ROOT=/data/nie/teams/arl/unit_tests_data/
+        export CTEST_OUTPUT_ON_FAILURE=1
+        ctest -T test --no-compress-output -E Python.onnx
+        '''
+    }
+}
+
+pipeline {
+	agent {
+		node {
+			label "${NODE_LABEL}"
+		}
+	}
+
+	environment {
+		CREDENTIALS_ID = '55222652-84ed-44de-a95f-db786cd47cf7'
+		SSH_CREDENTIALS_ID = 'bob_ssh'
+		unsupported_platform = "false"
+	}
+
+	stages {
+		stage('Pre-build') {
+			steps {
+				script{
+					newDescription = "Build for PR: $PULL_REQUEST_URL"
+					currentBuild.description= newDescription
+				}
+			}
+		}
+
+		stage('MergePullRequest') {
+			steps {
+				dir(path: "${PULL_REQUEST_TO_REPO_SLUG}") {
+
+					sh "git config --global user.email 'anyone@navinfo.eu'" //needed to use git commands, otherwise an error occurs
+					sh "git config --global user.name 'anyone'" //needed to use git commands, otherwise an error occurs
+
+					git(credentialsId: "${SSH_CREDENTIALS_ID}", branch: 'master', url: "ssh://git@navbitbucket01.navinfo.eu:7999/${PULL_REQUEST_TO_REPO_PROJECT_KEY}/${PULL_REQUEST_TO_REPO_SLUG}.git")
+					sh "git reset --hard ${PULL_REQUEST_TO_HASH}"
+					sh "git status" //show status for debugging
+					//sh "git remote add from ${PULL_REQUEST_FROM_SSH_CLONE_URL}"
+					//sh "git fetch from"
+					sh "git merge ${PULL_REQUEST_FROM_HASH}"
+					sh "git --no-pager log --max-count=10 --graph --abbrev-commit" //show commits history for debugging
+				}
+			}
+		}
+
+		stage('Check Platform') {
+			steps {
+				script{
+					platformsFile = "${PULL_REQUEST_TO_REPO_SLUG}/platforms.txt"
+
+					if( fileExists(platformsFile) ) {
+
+						//Read file to check if this build is needed
+						platformsList = readFile(platformsFile)
+						platformsList_split = platformsList.readLines()
+
+						echo "Jenkins script says: ${PULL_REQUEST_TO_REPO_SLUG} needs to be built on these platforms:\n${platformsList}"
+
+						if ( ! platformsList_split.contains(NODE_LABEL) ) {
+							currentBuild.result = 'ABORTED'
+							unsupported_platform = "true"
+							error("Jenkins script says: '${PULL_REQUEST_TO_REPO_SLUG}' repo not required to build on ${NODE_LABEL}. Exiting!")
+						}
+					} else {
+						currentBuild.result = 'ABORTED'
+						unsupported_platform = "true"
+						error("Jenkins script says: build will not run since no platforms file was found at ${platformsFile}. Exiting!")
+					}
+				}
+				notifyBitbucket(buildStatus: 'INPROGRESS', buildName: "${NODE_LABEL}", commitSha1: "${PULL_REQUEST_FROM_HASH}", stashServerBaseUrl: 'https://bitbucket.navinfo.eu', projectKey: "${NODE_LABEL}", credentialsId: "${CREDENTIALS_ID}", prependParentProjectKey: false, ignoreUnverifiedSSLPeer: false, includeBuildNumberInKey: true, disableInprogressNotification: false, considerUnstableAsSuccess: false)
+			}
+		}
+
+		stage ('UpdateSubmodules') {
+		    steps {
+		        dir(path: "${PULL_REQUEST_TO_REPO_SLUG}") {
+					withCredentials([sshUserPrivateKey(credentialsId: "${SSH_CREDENTIALS_ID}", keyFileVariable: 'SSH_KEY')]) {
+						sh 'GIT_SSH_COMMAND="ssh -i $SSH_KEY" git submodule update --init --recursive'
+					}
+		        }
+		    }
+		}
+
+		stage('BuildDependencies') {
+			steps {
+				script{
+
+					filePath = "${PULL_REQUEST_TO_REPO_SLUG}/dependencies.txt"
+
+					if( fileExists(filePath) ) {
+
+						dependenciesList = readFile(filePath)
+						splitList = dependenciesList.readLines()
+
+						echo "Jenkins script says: ${PULL_REQUEST_TO_REPO_SLUG} have theses dependencies:\n${dependenciesList}"
+
+						splitList.each { item ->
+
+							repo_name = item.split("/")[-1]
+
+							if (repo_name != "builder") {
+								echo "Jenkins script says: Checkout ${repo_name} .."
+
+								dir(path: "${repo_name}") {
+									git(credentialsId: "${SSH_CREDENTIALS_ID}", branch: 'master', url: "ssh://git@navbitbucket01.navinfo.eu:7999/${item}.git")
+									
+									withCredentials([sshUserPrivateKey(credentialsId: "${SSH_CREDENTIALS_ID}", keyFileVariable: 'SSH_KEY')]) {
+										sh 'GIT_SSH_COMMAND="ssh -i $SSH_KEY" git submodule update --init --recursive --remote'
+									}
+								}
+							}
+
+							if (repo_name == "caffe") {
+
+								echo "Jenkins script says: Building ${repo_name} .."
+
+								dir(path: "${repo_name}/build") {
+
+									echo "Jenkins script says: ${repo_name} cmake starting!"
+
+									if("${NODE_LABEL}" == "jetson" || "${NODE_LABEL}" == "ubuntu+gpu" || "${NODE_LABEL}" == "aiim"){
+										sh 'cmake -D CPU_ONLY=OFF ..'
+									}else if("${NODE_LABEL}" == "ubuntu"){
+										sh 'cmake -D CPU_ONLY=ON ..'
+									}else{
+										error("Unknown platform")
+									}
+
+									echo "Jenkins script says: ${repo_name} cmake finished!"
+									sh 'make -j$(nproc)'
+									sh 'make install -j$(nproc)'
+									echo "Jenkins script says: ${repo_name} make & install finished!"
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		stage('Static Code Analysis') {
+			when {
+				expression { return "${NODE_LABEL}" == "aiim" }
+			}
+				
+			environment {
+				changed_files_c = ""
+				changed_files_py = ""
+			}
+			
+			stages {
+				stage('Get changed files') {
+					steps {
+						dir(path: "${PULL_REQUEST_TO_REPO_SLUG}/") {
+							script{
+								changed_files = sh(
+									script: 'git diff --name-only origin/${PULL_REQUEST_FROM_BRANCH} \$(git merge-base origin/${PULL_REQUEST_FROM_BRANCH} origin/${PULL_REQUEST_TO_BRANCH})',
+									returnStdout: true).trim()
+								
+								//grep would fail if no suitable file, so cat at end helps ignoring that failure
+								changed_files_c = sh(
+									script: "echo \"${changed_files}\" | grep -iE \".*\\.(CPP|C|HPP|H)\$\" | cat",
+									returnStdout: true).trim().replace("\n"," ")
+							
+								changed_files_py= sh(
+									script: "echo \"${changed_files}\" | grep -iE \".*\\.py\$\" | cat",
+									returnStdout: true).trim().replace("\n"," ")						
+							}
+						}
+					}
+				}
+			
+				stage('Run Pylint') {
+					steps {
+						dir(path: "${PULL_REQUEST_TO_REPO_SLUG}/") {
+							//Run pylint only on modified files in the PR, don't fail the build if pylint fails
+							sh returnStatus: true, script: 
+							"""
+								if [ ! -z \"${changed_files_py}\" ]
+								then
+									pylint --output-format=parseable --disable=E0611,E0401 ${changed_files_py} > pylint.pylint_report
+								fi
+							"""
+							
+							archiveArtifacts (
+								artifacts: 'pylint.pylint_report',
+								fingerprint: true,
+								allowEmptyArchive: true
+							)
+						}
+					}
+				}
+				
+				stage('Run CPPLint') {
+					steps {
+						dir(path: "${PULL_REQUEST_TO_REPO_SLUG}/") {
+							//Run CPPLint only on modified files in the PR, don't fail the build if CPPLint fails
+							sh returnStatus: true, script: 
+							"""
+								if [ ! -z \"${changed_files_c}\" ]
+								then
+									cpplint --includeorder=standardcfirst --filter=-build/c++11 --linelength=120  --extensions=c,h,hpp,cpp ${changed_files_c} > cpplint.cpplint_report 2>&1
+								fi
+							"""
+							
+							archiveArtifacts (
+								artifacts: 'cpplint.cpplint_report',
+								fingerprint: true,
+								allowEmptyArchive: true
+							)
+						}
+					}
+				}
+			}
+		}
+		
+        // The following stages are mutually exclusive:
+        // - If there's a Dockerfile in the repository, "BuildPullRequestDockerfile" will run inside a Docker container
+        // - Otherwise, "BuildPullRequestLocal" will run locally
+
+		stage('BuildAndRunTestsDockerfile') {
+			when {
+				// beforeAgent true is needed so the "when" block is evaluated before the "agent" block. Otherwise the
+				// script would try to run "docker build" without a Dockerfile and the build will fail
+				beforeAgent true
+				expression { return shouldBuildDockerfile() }
+			}
+			// Only this stage is run inside a docker container
+			agent {
+				dockerfile {
+					filename "${PULL_REQUEST_TO_REPO_SLUG}/Dockerfile"
+					reuseNode true // ensure the same node is used to run docker
+					additionalBuildArgs '--network=host --target=build_env'
+					args '--runtime=nvidia -v /data/aiim/unit_tests_data/:/data/aiim/unit_tests_data/ -v /data/nie/teams/arl/:/data/nie/teams/arl/ -v /data/input:/data/input -v /usr/share/zoneinfo:/usr/share/zoneinfo'
+				}
+			}
+			stages {
+				stage("BuildPullRequest") {
+					steps {
+						buildPullRequestScript()
+					}
+				}
+				stage("RunTests") {
+					steps {
+						runTests()
+					}
+				}
+				stage('ExecuteSystemTests') {
+					steps {
+						script {
+							def systemtests = load "builder/Jenkinsfile_systemtests.groovy"
+							systemtests.ExecuteSystemTests()
+						}
+					}
+				}
+			}
+		}
+
+		stage('BuildAndRunTestsLocal') {
+			when {
+				expression { return !shouldBuildDockerfile() }
+			}
+			stages {
+				stage("BuildPullRequest") {
+					steps {
+						buildPullRequestScript()
+					}
+				}
+				stage("RunTests") {
+					steps {
+						runTests()
+					}
+				}
+			}
+		}
+
+		stage('ExecuteSystemTests') {
+			when {
+				expression { return !shouldBuildDockerfile() }
+			}
+			steps {
+				script {
+					def systemtests = load "builder/Jenkinsfile_systemtests.groovy"
+					systemtests.ExecuteSystemTests()
+				}
+			}
+		}
+
+		stage("Check Coverage") {
+			steps {
+				script {
+					def coverage = load "builder/Jenkinsfile_coverage.groovy"
+					coverage.CheckCoverageCpp()
+					coverage.CheckCoveragePython()
+				}
+			}
+		}
+	}
+
+	post {
+		always {
+
+			echo "Jenkins script says: Archiving test results!"
+
+			// Archive the Test output
+			archiveArtifacts (
+				artifacts: '${PULL_REQUEST_TO_REPO_SLUG}/build/Testing/**/*.xml, \
+					   nie_libraries/common/apps/**/test_system/out*/*, \
+					   object_detection_framework/test_system/out*/*, \
+					   pointcloud/test_sys/out*/*, \
+					   scene_segmentation/semantic_segmentation/apps/trt/test_system/out*/*, \
+					   scene_segmentation/test_system/out*/*',
+				fingerprint: true,
+				allowEmptyArchive: true
+			)
+
+			// Process the CTest xml output with the xUnit plugin
+			xunit tools: [CTest(deleteOutputFiles: true, failIfNotNew: true, pattern: '${PULL_REQUEST_TO_REPO_SLUG}/build/Testing/**/*.xml', skipNoTestFiles: true, stopProcessingIfError: true)]
+
+			// report static code analysis violations to bitbucket
+			ViolationsToBitbucketServer([
+                bitbucketServerUrl: 'https://bitbucket.navinfo.eu',
+                projectKey: "${PULL_REQUEST_TO_REPO_PROJECT_KEY}",
+                pullRequestId: "${PULL_REQUEST_ID}",
+                repoSlug: "${PULL_REQUEST_TO_REPO_SLUG}",
+				commentOnlyChangedFiles: true,
+				createSingleFileComments: true,
+				keepOldComments: false,
+				maxNumberOfViolations: 20,
+				commentOnlyChangedContent: true,
+                commentOnlyChangedContentContext: 0,
+                credentialsId: "${CREDENTIALS_ID}",
+				
+				commentTemplate: """
+                **Reporter**: {{violation.reporter}}{{#violation.rule}}
+
+                **Rule**: {{violation.rule}}{{/violation.rule}}
+                **Severity**: {{violation.severity}}
+                **File**: {{violation.file}} L{{violation.startLine}}{{#violation.source}}
+
+                **Source**: {{violation.source}}{{/violation.source}}
+
+                {{violation.message}}
+                """,
+				
+                violationConfigs: [
+                    [parser: 'PYLINT', pattern: '.*\\.pylint_report\$', reporter: 'PyLint'],
+                    [parser: 'CPPLINT', pattern: '.*\\.cpplint_report\$', reporter: 'CPPLINT']
+                ]
+			])
+
+			echo "Jenkins script says: Cleaning up workspace after build!"
+
+			script{
+				directoriesList = sh(script: 'ls -d * */out || true', returnStdout: true).trim().readLines()
+				echo "Current directories are:\n${directoriesList}"
+
+				directoriesList.each { item ->
+					dir(path: "${item}"){
+						if (item != "system_tests_data" && item != "caffe" && item != "models_checkpoints") {
+							deleteDir()
+						}
+					}
+				}
+
+				directoriesList = sh(returnStdout: true, script: 'ls -d * */out || true').trim().readLines()
+				echo "After cleanup, directories are:\n${directoriesList}"
+			}
+		}
+		success {
+			script{
+				notifyBitbucket(buildStatus: 'SUCCESSFUL', buildName: "${NODE_LABEL}", commitSha1: "${PULL_REQUEST_FROM_HASH}", stashServerBaseUrl: 'https://bitbucket.navinfo.eu', projectKey: "${NODE_LABEL}", credentialsId: "${CREDENTIALS_ID}", prependParentProjectKey: false, ignoreUnverifiedSSLPeer: false, includeBuildNumberInKey: true, disableInprogressNotification: false, considerUnstableAsSuccess: false)
+			}
+		}
+		unsuccessful {
+			script{
+				if( unsupported_platform == "false" ){
+					notifyBitbucket(buildStatus: 'FAILED', buildName: "${NODE_LABEL}", commitSha1: "${PULL_REQUEST_FROM_HASH}", stashServerBaseUrl: 'https://bitbucket.navinfo.eu', projectKey: "${NODE_LABEL}", credentialsId: "${CREDENTIALS_ID}", prependParentProjectKey: false, ignoreUnverifiedSSLPeer: false, includeBuildNumberInKey: true, disableInprogressNotification: false, considerUnstableAsSuccess: false)
+				}
+			}
+		}
+	}
+}
+

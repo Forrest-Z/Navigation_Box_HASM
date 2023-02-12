@@ -1,0 +1,42 @@
+#!/bin/bash
+# Copyright (C) 2020 by NavInfo Europe B.V. The Netherlands - All rights reserved
+# Information classification: Confidential
+# This content is protected by international copyright laws.
+# Reproduction and distribution is prohibited without written permission.
+
+# Exit on errors and undefined variables
+set -euo pipefail
+
+# Specify package name, version, source, and release
+PKG_NAME="libprotobuf-dev"
+PKG_VERSION="3.6.0"
+PKG_SOURCE="https://github.com/google/protobuf.git"
+PKG_RELEASE="3" # Indicates the version of the generated package
+
+# Install package specific dependencies
+apt-get update
+apt-get install --no-install-recommends --assume-yes \
+    zlib1g-dev
+
+# Clone repository
+git clone ${PKG_SOURCE} ${PKG_NAME}
+
+# Build package
+cd ${PKG_NAME}
+git checkout v${PKG_VERSION}
+./autogen.sh
+./configure
+make -j $(nproc)
+
+# Create Debian package
+echo "NavInfo compiled package ${PKG_NAME}" > description-pak
+checkinstall \
+    --maintainer="IT NavInfo" \
+    --pkggroup="navinfo" \
+    --pkgname="navinfo-${PKG_NAME}" \
+    --pkgversion=${PKG_VERSION} \
+    --pkgrelease=${PKG_RELEASE} \
+    --pkgsource=${PKG_SOURCE} \
+    --arch=${PKG_ARCH} \
+    --provides="navinfo-${PKG_NAME}" \
+    --requires="zlib1g-dev"

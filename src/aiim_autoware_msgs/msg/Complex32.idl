@@ -1,0 +1,34 @@
+// This is a modified version of the original Complex32.idl from Autoware.
+// The original is licensed under the Apache License, Version 2.0. For more information
+// see the LICENSE file in the repository root
+//
+// The changes made in this file, of which a summary is listed below, are copyrighted:
+//
+// Copyright (C) 2021 by NavInfo Europe B.V. The Netherlands - All rights reserved
+// Information classification: Confidential
+// This content is protected by international copyright laws.
+// Reproduction and distribution is prohibited without written permission.
+//
+// List of changes:
+// * Renamed autoware_auto_msgs to aiim_autoware_msgs
+
+module aiim_autoware_msgs {
+  module msg {
+    @verbatim (language="comment", text=
+      " Complex32.msg" "\n"
+      " Can be used to represent yaw angle for trajectories" "\n"
+      " To convert back to a yaw angle, see" "\n"
+      " https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles")
+    struct Complex32 {
+      @verbatim (language="comment", text=
+        " cos(yaw / 2)")
+      @default (value=1.0)
+      float real;
+
+      @verbatim (language="comment", text=
+        " sin(yaw / 2)")
+      @default (value=0.0)
+      float imag;
+    };
+  };
+};

@@ -1,0 +1,16 @@
+#include "aiim_autoware_msgs/msg/DetectedObjectKinematics.idl"
+#include "aiim_autoware_msgs/msg/ObjectClassification.idl"
+#include "aiim_autoware_msgs/msg/Shape.idl"
+
+module aiim_autoware_msgs {
+  module msg {
+    struct DetectedObject {
+      @range (min=0.0, max=1.0)
+      float existence_probability;
+
+      sequence<aiim_autoware_msgs::msg::ObjectClassification> classification;
+      aiim_autoware_msgs::msg::DetectedObjectKinematics kinematics;
+      aiim_autoware_msgs::msg::Shape shape;
+    };
+  };
+};

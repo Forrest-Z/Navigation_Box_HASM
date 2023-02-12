@@ -1,0 +1,27 @@
+List of open issues
+===================
+
+General
+-------
+- Double-check that the prefix 'navinfo-' works as intended
+- Verify that building is ok on other platform (Specifically Jetson arm64)
+- How is distribution of custom packages handled when a package is updated?
+- Currently, packages incorrectly make no differences between dependencies for build vs dependencies for release
+- Currently, there is no automatic check on dependencies between custom packages (e.g. eigen is a dependency of ceres,
+  vtk is a dependency of pcl); As a result the user must ensure that packages are built in the correct order
+- Should the docker build image be as minimal as possible, or is it ok to include packages to allow performance enhancements?
+    - CUDA (Which version?) / MKL / IPP / TBB
+    - If the CUDA version is fixed in the builder image, then it is not possible to build against another version
+    - Do we need multiple base images, selectable from a certain package?
+- Default install location is now /usr/local; Is this ok, or should it be /usr --> would conflict with system packages?
+- Ensure that packages are compiled with -fpic (Position Independent Code) for best compatibility
+- Are we reinventing the wheel? Is there existing infrastructure that does all this better / easier?
+    - At least it must be flexible enough to support our requirements,..
+    - How are official Debian packages generated / maintained?
+- Beware of the day that other unix flavors or operating systems should be supported
+
+Package specific Enhancements
+-----------------------------
+- libeigen3-dev: Enable SIMD optimisations (But be careful to check thoroughly)
+- libopencv-dev: Enable NVidia video codec support (See: https://developer.nvidia.com/nvidia-video-codec-sdk/download)
+- libopencv-dev: Should 'server' / 'desktop' be included in name of package, or version of package?

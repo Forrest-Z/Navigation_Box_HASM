@@ -1,0 +1,45 @@
+# Copyright (C) 2021 by NavInfo Europe B.V. The Netherlands - All rights reserved
+# Information classification: Confidential
+# This content is protected by international copyright laws.
+# Reproduction and distribution is prohibited without written permission.
+path_cluster_detection:
+    ros__parameters:
+        required: False
+
+        # topic names
+        # input:
+        points_topic: "pcap_streamer_points" # input topic to lidar points
+        trajectory_topic: "planned_trajectory" # input topic to trajectory
+        state_topic: "vehicle_state" # input topic to kinematic state (for position) 
+        # output
+        cluster_topic: "object_clusters" # output pointcloud topic with clusters
+        bbox_topic: "trajectory_bbox_array" # output BoundingBoxArray topic
+
+        # Vehicle Information
+        vehicle_reference_frame: "base_link"
+
+        # # Cloud Filtering parameters
+        # height_min: 0.2 # min z height above path [float]
+        # height_max: 3.0 # max z height above path [float]
+        # obstacle_distance_min: 1.0  # min distance an obstacle can be [float]
+        # obstacle_distance_max: 100.0 # max distance an obstacle can be [float]
+
+        # # Euclidian Clustering
+        # voxel_leaf_size: 0.2 # downsampling for input points [float]
+        # cluster_tolerance: 0.4 # max distance between cluster points [float]
+        # cluster_points_min: 5 # min points of cluster [uint]
+        # cluster_points_max: 200 # max points of cluster [uint]
+        # cloud_points_min: 10 # min points of input cloud [uint]
+
+        # Cloud Filtering parameters
+        height_min: 0.2 # min z height above path [float]
+        height_max: 3.0 # max z height above path [float]
+        obstacle_distance_min: 1.0  # min distance an obstacle can be [float]
+        obstacle_distance_max: 100.0 # max distance an obstacle can be [float]
+
+        # Euclidian Clustering
+        voxel_leaf_size: 0.8 # downsampling for input points [float]
+        cluster_tolerance: 0.2 # max distance between cluster points [float]
+        cluster_points_min: 20 # min points of cluster [uint]
+        cluster_points_max: 200 # max points of cluster [uint]
+        cloud_points_min: 10 # min points of input cloud [uint]

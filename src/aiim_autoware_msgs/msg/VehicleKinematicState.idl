@@ -1,0 +1,33 @@
+// This is a modified version of the original VehicleKinematicState.idl from Autoware.
+// The original is licensed under the Apache License, Version 2.0. For more information
+// see the LICENSE file in the repository root
+//
+// The changes made in this file, of which a summary is listed below, are copyrighted:
+//
+// Copyright (C) 2021 by NavInfo Europe B.V. The Netherlands - All rights reserved
+// Information classification: Confidential
+// This content is protected by international copyright laws.
+// Reproduction and distribution is prohibited without written permission.
+//
+// List of changes:
+// * Renamed autoware_auto_msgs to aiim_autoware_msgs
+
+#include "aiim_autoware_msgs/msg/TrajectoryPoint.idl"
+#include "geometry_msgs/msg/Transform.idl"
+#include "std_msgs/msg/Header.idl"
+
+module aiim_autoware_msgs {
+  module msg {
+    @verbatim (language="comment", text=
+      " VehicleKinematicState.msg" "\n"
+      " Representation of a trajectory point with timestamp for the controller")
+    struct VehicleKinematicState {
+      std_msgs::msg::Header header;
+
+      aiim_autoware_msgs::msg::TrajectoryPoint state;
+
+      geometry_msgs::msg::Transform delta;
+    };
+  };
+};
+

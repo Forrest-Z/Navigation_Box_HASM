@@ -1,0 +1,41 @@
+<!--
+  This is a modified version of the original autoware_rviz_plugins plugins_description.xml from Autoware.
+  The original is licensed under the Apache License, Version 2.0. For more information
+  see the LICENSE file in the repository root
+  The changes made in this file, of which a summary is listed below, are copyrighted:
+
+  Copyright (C) 2021 by NavInfo Europe B.V. The Netherlands - All rights reserved
+  Information classification: Confidential
+  This content is protected by international copyright laws.
+  Reproduction and distribution is prohibited without written permission.
+
+  List of Changes:
+  * Updated message_type and class name
+-->
+<library path="aiim_rviz_plugins">
+
+  <!-- Displays plugins -->
+
+  <class
+    name="aiim_rviz_plugins/BoundingBoxArray"
+    type="aiim::rviz_plugins::BoundingBoxArrayDisplay"
+    base_class_type="rviz_common::Display"
+  >
+    <description>
+      Convert an array of bounding boxes to markers and display them.
+    </description>
+    <message_type>aiim_autoware_msgs/msg/BoundingBoxArray</message_type>
+  </class>
+
+  <class
+    name="aiim_rviz_plugins/Trajectory"
+    type="aiim::rviz_plugins::TrajectoryDisplay"
+    base_class_type="rviz_common::Display"
+  >
+    <description>
+      Convert a trajectory to markers and display them.
+    </description>
+    <message_type>aiim_autoware_msgs/msg/Trajectory</message_type>
+  </class>
+
+</library>

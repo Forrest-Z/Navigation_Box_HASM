@@ -1,0 +1,12 @@
+#include "aiim_autoware_msgs/msg/MapPrimitive.idl"
+
+module aiim_autoware_msgs {
+  module msg {
+    @verbatim (language="comment", text=
+      " A segment of an HADMap which contains one or more MapPrimitives.")
+    struct HADMapSegment {
+      sequence<aiim_autoware_msgs::msg::MapPrimitive> primitives;
+      int64 preferred_primitive_id;
+    };
+  };
+};

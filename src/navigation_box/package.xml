@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<!--
+  Copyright (C) 2021 by NavInfo Europe B.V. The Netherlands - All rights reserved
+  Information classification: Confidential
+  This content is protected by international copyright laws.
+  Reproduction and distribution is prohibited without written permission.
+-->
+<package format="2">
+  <name>navigation_box</name>
+  <version>1.0.0</version>
+  <description>The navigation_box package</description>
+  <maintainer email="info@aiim.ai">AIIM</maintainer>
+  <license>NavInfo Europe B.V. The Netherlands - Confidential</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>ament_cmake_python</buildtool_depend>
+
+  <depend>aiim_rospy</depend>
+
+  <exec_depend>launch_ros</exec_depend>
+  <exec_depend>ndt_localization</exec_depend>
+  <exec_depend>pcap_streamer</exec_depend>
+  <exec_depend>points_map_loader</exec_depend>
+  <exec_depend>voxel_grid_filter</exec_depend>
+  
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+
+</package>

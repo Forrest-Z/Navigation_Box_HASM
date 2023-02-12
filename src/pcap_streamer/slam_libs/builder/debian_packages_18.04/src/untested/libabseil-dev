@@ -1,0 +1,43 @@
+#!/bin/bash
+# Copyright (C) 2020 by NavInfo Europe B.V. The Netherlands - All rights reserved
+# Information classification: Confidential
+# This content is protected by international copyright laws.
+# Reproduction and distribution is prohibited without written permission.
+
+# Exit on errors and undefined variables
+set -euo pipefail
+
+# Specify package name, version, source, and release
+PKG_NAME="libabseil-dev"
+PKG_VERSION="1.0" # Rolling release from github actually
+PKG_SOURCE="https://github.com/abseil/abseil-cpp"
+PKG_RELEASE="2"   # Indicates the version of the generated package
+
+# Derive package architecture
+ARCH=$(uname -m) # x86_64 / aarch64
+[[ "$ARCH" == "x86_64" ]] && PKG_ARCH="amd64"
+[[ "$ARCH" == "aarch64" ]] && PKG_ARCH="arm64"
+
+# Store current path
+CURRENT_PATH=${PWD}
+
+# Clone repository
+git clone ${PKG_SOURCE} ${PKG_NAME}
+
+# Create Debian package
+cd ${PKG_NAME}
+
+DEB_DIR="deb/${PKG_NAME}_${PKG_VERSION}-${PKG_RELEASE}_${PKG_ARCH}"
+HEADERS_DIR="$DEB_DIR/usr/local/include"
+mkdir -p $HEADERS_DIR
+cp -r absl "$HEADERS_DIR"
+
+mkdir -p "$DEB_DIR/DEBIAN"
+CONTROL="$DEB_DIR/DEBIAN/control"
+echo "Package: ${PKG_NAME}"                   >> $CONTROL
+echo "Version: ${PKG_VERSION}-${PKG_RELEASE}" >> $CONTROL
+echo "Architecture: ${PKG_ARCH}"              >> $CONTROL
+echo "Maintainer: IT Navinfo"                 >> $CONTROL
+echo "Description: NavInfo compiled package"  >> $CONTROL
+
+dpkg-deb --build $DEB_DIR

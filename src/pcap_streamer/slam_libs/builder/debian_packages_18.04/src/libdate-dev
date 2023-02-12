@@ -1,0 +1,49 @@
+#!/bin/bash
+# Copyright (C) 2020 by NavInfo Europe B.V. The Netherlands - All rights reserved
+# Information classification: Confidential
+# This content is protected by international copyright laws.
+# Reproduction and distribution is prohibited without written permission.
+
+# Exit on errors and undefined variables
+set -euo pipefail
+
+# Specify package name, version, source, and release
+PKG_NAME="libdate-dev"
+PKG_VERSION="2.4.1"
+PKG_SOURCE="https://github.com/HowardHinnant/date.git"
+PKG_RELEASE="3" # Indicates the version of the generated package
+
+# Install package specific dependencies
+apt-get update
+apt-get install --no-install-recommends --assume-yes \
+  libcurl4-openssl-dev
+
+# Clone repository
+git clone ${PKG_SOURCE} ${PKG_NAME}
+
+# Build package
+cd ${PKG_NAME}
+git checkout "v${PKG_VERSION}"
+mkdir build
+cd build
+cmake -D CMAKE_BUILD_TYPE=Release \
+      -D CMAKE_CXX_STANDARD=14 \
+      -D CMAKE_CXX_FLAGS=-fPIC \
+      -D USE_SYSTEM_TZ_DB=ON \
+      -D BUILD_SHARED_LIBS=ON \
+      -D ENABLE_DATE_TESTING=OFF \
+      ..
+make -j $(nproc)
+
+# Create Debian package
+echo "NavInfo compiled package ${PKG_NAME}" > description-pak
+checkinstall \
+    --maintainer="IT NavInfo" \
+    --pkggroup="navinfo" \
+    --pkgname="navinfo-${PKG_NAME}" \
+    --pkgversion=${PKG_VERSION} \
+    --pkgrelease=${PKG_RELEASE} \
+    --pkgsource=${PKG_SOURCE} \
+    --arch=${PKG_ARCH} \
+    --provides="navinfo-${PKG_NAME}" \
+    --requires="libcurl4-openssl-dev"

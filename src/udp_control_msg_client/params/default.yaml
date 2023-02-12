@@ -1,0 +1,9 @@
+# Copyright (C) 2021 by NavInfo Europe B.V. The Netherlands - All rights reserved
+# Information classification: Confidential
+# This content is protected by international copyright laws.
+# Reproduction and distribution is prohibited without written permission.
+udp_control_msg_client:
+    ros__parameters:
+        server_ip_address: "192.168.2.45"
+        server_ip_port: 5016
+        topic: "control_command"

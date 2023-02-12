@@ -1,0 +1,41 @@
+// This is a modified version of the original PlanTrajectory.idl from Autoware.
+// The original is licensed under the Apache License, Version 2.0. For more information
+// see the LICENSE file in the repository root
+//
+// The changes made in this file, of which a summary is listed below, are copyrighted:
+//
+// Copyright (C) 2021 by NavInfo Europe B.V. The Netherlands - All rights reserved
+// Information classification: Confidential
+// This content is protected by international copyright laws.
+// Reproduction and distribution is prohibited without written permission.
+//
+// List of changes:
+// * Renamed autoware_auto_msgs to aiim_autoware_msgs
+
+#include "aiim_autoware_msgs/msg/Route.idl"
+#include "aiim_autoware_msgs/msg/Trajectory.idl"
+
+module aiim_autoware_msgs {
+  module action {
+    module PlanTrajectory_Result_Constants {
+      const uint8 SUCCESS = 0;
+      const uint8 FAIL = 1;
+    };
+    struct PlanTrajectory_Goal {
+      aiim_autoware_msgs::msg::Route sub_route;
+    };
+
+    struct PlanTrajectory_Result {
+      @verbatim(language = "comment", text =
+        "Report of end condition. Value should be one of PlanTrajectory_Constants")
+      uint8 result;
+      aiim_autoware_msgs::msg::Trajectory trajectory;
+    };
+
+    struct PlanTrajectory_Feedback {
+      @verbatim(language = "comment", text =
+        "Currently we don't need feedback, but we need some variable to compile")
+      uint8 unused_variable;
+    };
+  };
+};

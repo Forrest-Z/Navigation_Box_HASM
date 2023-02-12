@@ -1,0 +1,21 @@
+# Visual Studio project related stuff.
+*.suo
+*.sdf
+*.user
+*.opensdf
+# Visual Studio 32 bits build.
+Debug
+Release
+# Visual Studio 64 bits build.
+x64
+# Visual Studio Code settings
+.vscode
+# CMakeLists build.
+build
+cmake-build*
+
+*.pyc
+
+**/.idea/*
+
+**/docs/*

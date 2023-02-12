@@ -1,0 +1,33 @@
+// This is a modified version of the original Quaternion32.idl from Autoware.
+// The original is licensed under the Apache License, Version 2.0. For more information
+// see the LICENSE file in the repository root
+//
+// The changes made in this file, of which a summary is listed below, are copyrighted:
+//
+// Copyright (C) 2021 by NavInfo Europe B.V. The Netherlands - All rights reserved
+// Information classification: Confidential
+// This content is protected by international copyright laws.
+// Reproduction and distribution is prohibited without written permission.
+//
+// List of changes:
+// * Renamed autoware_auto_msgs to aiim_autoware_msgs
+
+module aiim_autoware_msgs {
+  module msg {
+    @verbatim (language="comment", text=
+      " Represents rotation, but with less precision than the message in common_interfaces")
+    struct Quaternion32 {
+      @default (value=0.0)
+      float x;
+
+      @default (value=0.0)
+      float y;
+
+      @default (value=0.0)
+      float z;
+
+      @default (value=1.0)
+      float w;
+    };
+  };
+};

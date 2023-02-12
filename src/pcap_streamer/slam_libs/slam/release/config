@@ -1,0 +1,4 @@
+Host bitbucket.navinfo.eu
+    HostName 10.69.1.4
+    StrictHostKeyChecking no
+    Loglevel=error
